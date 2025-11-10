@@ -1,19 +1,18 @@
 import { Page, Text, Button, Box } from 'zmp-ui';
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
 export default function Intro() {
   const navigate = useNavigate();
 
   return (
-    <Page className="flex flex-col items-center justify-center p-6">
-      <Box className="text-center space-y-4">
-        <Text.Header>FECredit - Vay Nhanh</Text.Header>
-        <Text size="large">Vay vốn chỉ trong 3 phút qua Zalo</Text>
+    <Page className="bg-gradient-to-b from-green-600 to-green-700 text-white">
+      <Box className="flex-1 flex flex-col justify-end pb-20 px-6">
+        <Text className="text-4xl font-bold text-center mb-6">FE CREDIT</Text>
+        <Text className="text-xl text-center mb-12">Vay vốn chỉ trong 3 phút qua Zalo</Text>
         <Button
-          type="highlight"
+          className="bg-white text-green-600 font-bold text-lg rounded-full"
           size="large"
-          onClick={() => navigate('/form1')}
-          className="w-full"
+          onClick={() => navigate('/terms')}
         >
           Bắt đầu ngay
         </Button>
