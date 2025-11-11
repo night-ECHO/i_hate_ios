@@ -11,33 +11,44 @@ export default defineConfig({
   plugins: [
     react(),
     {
-      name: 'copy-zmp-assets',
-      writeBundle() {
+      name: 'zmp-assets',
+      async writeBundle() {
         const fs = require('fs');
-        const copy = (src: string, dest: string) => {
-          if (fs.existsSync(src)) {
-            fs.mkdirSync(path.dirname(dest), { recursive: true });
-            fs.copyFileSync(src, dest);
-            console.log(`Copied: ${src} → ${dest}`);
+        const { execSync } = require('child_process');
+
+        const outDir = path.resolve(__dirname, 'www');
+
+        // 1. Copy zaui.css
+        const zauiSrc = path.resolve(__dirname, 'node_modules/zmp-ui/zaui.css');
+        const zauiDest = path.resolve(outDir, 'zmp-ui/zaui.css');
+        if (fs.existsSync(zauiSrc)) {
+          fs.mkdirSync(path.dirname(zauiDest), { recursive: true });
+          fs.copyFileSync(zauiSrc, zauiDest);
+          console.log('Copied zaui.css');
+        }
+
+        // 2. Compile SCSS → CSS into www/ (root)
+        const compile = (entry: string, output: string) => {
+          const cmd = `npx postcss ${entry} -o ${path.resolve(outDir, output)}`;
+          try {
+            execSync(cmd, { stdio: 'inherit' });
+            console.log(`Compiled ${entry} → ${output}`);
+          } catch (e) {
+            console.error(`Failed to compile ${entry}`, e);
           }
         };
 
-        // Copy zaui.css từ node_modules
-        copy(
-          path.resolve(__dirname, 'node_modules/zmp-ui/zaui.css'),
-          path.resolve(__dirname, 'www/zmp-ui/zaui.css')
-        );
+        compile('src/css/tailwind.scss', 'tailwind.css');
+        compile('src/css/app.scss', 'app.css');
 
-        // Copy app-config.json và manifest
-        copy('app-config.json', 'www/app-config.json');
-        copy('public/zmp-manifest.json', 'www/zmp-manifest.json');
+        // 3. Copy config files
+        fs.copyFileSync('app-config.json', path.resolve(outDir, 'app-config.json'));
+        fs.copyFileSync('public/zmp-manifest.json', path.resolve(outDir, 'zmp-manifest.json'));
       },
     },
   ],
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, 'src'),
-    },
+    alias: { '@': path.resolve(__dirname, 'src') },
   },
   build: {
     outDir: 'www',
@@ -45,17 +56,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         entryFileNames: 'app.js',
-        assetFileNames: ({ name }) => {
-          if (name?.endsWith('.css')) {
-            return `${name.replace(/-[a-z0-9]+\.css$/, '')}.css`; // tailwind.css, app.css
-          }
-          return '[name].[ext]';
-        },
+        assetFileNames: '[name].[ext]', // no hash, no folder
       },
     },
   },
-  server: {
-    port: 4000,
-    host: true,
-  },
+  server: { port: 4000, host: true },
 });

@@ -1,10 +1,7 @@
 {
   "app": {
     "title": "FECredit - Vay Nhanh",
-    "textColor": {
-      "light": "#000000",
-      "dark": "#ffffff"
-    },
+    "textColor": { "light": "#000000", "dark": "#ffffff" },
     "statusBar": "transparent",
     "actionBarHidden": true,
     "hideIOSSafeAreaBottom": true,

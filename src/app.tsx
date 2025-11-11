@@ -7,6 +7,12 @@ import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import MyApp from "@/main";
 
+if (import.meta.env.DEV) {
+  await import("zmp-ui/zaui.css");
+  await import("@/css/tailwind.scss");
+  await import("@/css/app.scss");
+}
+
 const App = () => {
   const [isReady, setIsReady] = useState(false);
 
@@ -16,15 +22,20 @@ const App = () => {
         setIsReady(true);
       });
     } else {
-      console.warn("ZMP SDK not loaded – Running in dev mode");
-      setIsReady(true);
+      // Dev mode: không có ZMP SDK → vẫn chạy
+      console.warn("ZMP SDK not loaded – Running in development mode");
+      setTimeout(() => setIsReady(true), 500);
     }
   }, []);
 
   if (!isReady) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
-        <div className="text-lg">Đang tải...</div>
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="text-lg text-green-600 font-bold">FE CREDIT</div>
+          <div className="text-sm text-gray-600">Đang tải ứng dụng...</div>
+        </div>
       </div>
     );
   }
