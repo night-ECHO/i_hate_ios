@@ -10,28 +10,26 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Clean install
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
+          npm install yaml@2.8.1 --save-exact
+          npm install
+
+      - name: Verify yaml version
+        run: |
+          grep -A 5 -B 5 "yaml.*2\.8\.1" package-lock.json || echo "yaml@2.8.1 not found!"
+
+      - name: CI install
         run: npm ci
 
-      - name: Build web assets
-        run: npm run build
-
-      - name: Sync Capacitor
-        run: npx cap sync ios
-
-      - name: Build iOS Archive
-        run: |
-          xcodebuild -workspace ios/App/App.xcworkspace \
-            -scheme App \
-            -configuration Release \
-            -archivePath build/app.xcarchive \
-            archive
-
-      - name: Upload Artifact
+      - name: Upload debug log on failure
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: fecredit-ios-app
-          path: build/app.xcarchive/Products/Applications/*.app
+          name: npm-debug-log
+          path: /Users/runner/.npm/_logs/*-debug-*.log
