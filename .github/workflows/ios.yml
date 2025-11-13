@@ -1,0 +1,18 @@
+name: Build iOS
+on: [push]
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm ci
+      - run: npm run build
+      - run: npx cap sync ios
+      - run: xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Release -archivePath build/app.xcarchive archive
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fecredit-ios-app
+          path: build/app.xcarchive/Products/Applications/*.app
