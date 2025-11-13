@@ -1,16 +1,35 @@
 name: Build iOS
 on: [push]
+
 jobs:
   build:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '20' }
-      - run: npm ci
-      - run: npm run build
-      - run: npx cap sync ios
-      - run: xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Release -archivePath build/app.xcarchive archive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web assets
+        run: npm run build
+
+      - name: Sync Capacitor
+        run: npx cap sync ios
+
+      - name: Build iOS Archive
+        run: |
+          xcodebuild -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -archivePath build/app.xcarchive \
+            archive
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
