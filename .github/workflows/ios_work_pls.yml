@@ -1,0 +1,44 @@
+name: Build iOS
+on: [push]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install Capacitor
+        run: |
+          npm install @capacitor/cli @capacitor/ios
+
+      - name: Add iOS platform
+        run: npx cap add ios
+
+      - name: Build web
+        run: npm run build
+
+      - name: Sync iOS
+        run: npx cap sync ios
+
+      - name: Build IPA
+        run: |
+          xcodebuild -workspace ios/App/App.xcworkspace \
+                      -scheme App \
+                      -configuration Release \
+                      -archivePath build/app.xcarchive \
+                      archive
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: fecredit-ios
+          path: build/app.xcarchive/Products/Applications/*.app
