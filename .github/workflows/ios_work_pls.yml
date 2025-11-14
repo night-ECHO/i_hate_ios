@@ -5,93 +5,43 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-      # --------------------------------------------------------------
       - uses: actions/checkout@v4
 
-      # --------------------------------------------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      # --------------------------------------------------------------
-      - name: Install npm dependencies
+      - name: Install deps
         run: npm ci
 
-      # --------------------------------------------------------------
-      - name: Install Capacitor CLI + iOS plugin
+      - name: Install Capacitor
         run: npm install @capacitor/cli @capacitor/ios
 
-      # --------------------------------------------------------------
-      - name: Build web assets (Vite → www/)
+      - name: Build web
         run: npm run build
 
-      # --------------------------------------------------------------
-
-      # --------------------------------------------------------------
-      - name: Sync web assets into iOS
+      - name: Sync iOS
         run: npx cap sync ios
 
-      # --------------------------------------------------------------
-      - name: Build & Archive (Free Apple ID Auto-Signing)
-        env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}   # <-- App-Specific Password!
+      - name: Build UNSIGNED App
         run: |
-          # ---- create a temporary keychain (keeps the runner clean) ----
-          security create-keychain -p "" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "" build.keychain
-          security set-keychain-settings -t 3600 -u build.keychain
-
-          # ---- sanity check -------------------------------------------------
-          if [ ! -d "ios/App/App.xcworkspace" ]; then
-            echo "ERROR: iOS workspace not found!"
-            echo "Contents of ios/:"
-            ls -R ios/ || true
-            exit 1
-          fi
-
-          # ---- archive -------------------------------------------------------
           xcodebuild -workspace ios/App/App.xcworkspace \
-                     -scheme App \
-                     -configuration Debug \
-                     -sdk iphoneos \
-                     -archivePath build/app.xcarchive \
-                     archive \
-                     -allowProvisioningUpdates \
-                     -authenticationPolicy=allowNetworkAccess \
-                     -authenticationAppleID="$APPLE_ID" \
-                     -authenticationPassword="$APPLE_ID_PASSWORD" \
-                     CODE_SIGN_IDENTITY="" \
-                     PROVISIONING_PROFILE_SPECIFIER=""
+                      -scheme App \
+                      -configuration Debug \
+                      -sdk iphoneos \
+                      -archivePath build/app.xcarchive \
+                      archive \
+                      CODE_SIGNING_ALLOWED=NO
 
-      # --------------------------------------------------------------
-      - name: Export Development IPA
+      - name: Export .app
         run: |
-          mkdir -p build/ipa
+          mkdir -p build/app
+          cp -r build/app.xcarchive/Products/Applications/*.app build/app/
 
-          cat > exportOptions.plist <<'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key><string>development</string>
-            <key>compileBitcode</key><false/>
-          </dict>
-          </plist>
-          EOF
-
-          xcodebuild -exportArchive \
-                     -archivePath build/app.xcarchive \
-                     -exportOptionsPlist exportOptions.plist \
-                     -exportPath build/ipa \
-                     -allowProvisioningUpdates
-
-      # --------------------------------------------------------------
-      - name: Upload IPA
+      - name: Upload .app
         uses: actions/upload-artifact@v4
         with:
-          name: fecredit-ios-ipa
-          path: build/ipa/*.ipa
+          name: fecredit-ios-app
+          path: build/app/*.app
