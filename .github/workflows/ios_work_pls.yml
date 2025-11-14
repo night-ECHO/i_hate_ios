@@ -17,7 +17,7 @@ jobs:
         run: npm ci
 
       - name: Install Capacitor
-        run: npm install @capacitor/cli @capacitor/ios
+        run: npm install @capacitor/core @capacitor/cli @capacitor/ios
 
       - name: Build web
         run: npm run build

@@ -15,17 +15,10 @@ export default defineConfig({
       async writeBundle() {
         const fs = require('fs');
         const { execSync } = require('child_process');
+
         const outDir = path.resolve(__dirname, 'www');
 
-        // 1. index.html
-        const indexSrc = path.resolve(__dirname, 'index.html');
-        const indexDest = path.resolve(outDir, 'index.html');
-        if (fs.existsSync(indexSrc)) {
-          fs.copyFileSync(indexSrc, indexDest);
-          console.log('Copied index.html');
-        }
-
-        // 2. zaui.css
+        // 1. Copy zaui.css
         const zauiSrc = path.resolve(__dirname, 'node_modules/zmp-ui/zaui.css');
         const zauiDest = path.resolve(outDir, 'zmp-ui/zaui.css');
         if (fs.existsSync(zauiSrc)) {
@@ -34,7 +27,7 @@ export default defineConfig({
           console.log('Copied zaui.css');
         }
 
-        // 3. Compile SCSS
+        // 2. Compile SCSS → CSS into www/ (root)
         const compile = (entry: string, output: string) => {
           const cmd = `npx postcss ${entry} -o ${path.resolve(outDir, output)}`;
           try {
@@ -44,33 +37,28 @@ export default defineConfig({
             console.error(`Failed to compile ${entry}`, e);
           }
         };
+
         compile('src/css/tailwind.scss', 'tailwind.css');
         compile('src/css/app.scss', 'app.css');
 
-        // 4. Config files
+        // 3. Copy config files
         fs.copyFileSync('app-config.json', path.resolve(outDir, 'app-config.json'));
         fs.copyFileSync('public/zmp-manifest.json', path.resolve(outDir, 'zmp-manifest.json'));
       },
     },
   ],
-
   resolve: {
     alias: { '@': path.resolve(__dirname, 'src') },
   },
-
   build: {
     outDir: 'www',
     emptyOutDir: true,
-    manifest: false,                                 // <-- NEW
     rollupOptions: {
-      input: path.resolve(__dirname, 'index.html'), // <-- NEW
-      external: ['app.js'],
       output: {
         entryFileNames: 'app.js',
-        assetFileNames: '[name].[ext]',
+        assetFileNames: '[name].[ext]', // no hash, no folder
       },
     },
   },
-
   server: { port: 4000, host: true },
 });

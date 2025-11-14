@@ -42,17 +42,26 @@ const App = () => {
     };
   }, [ready]);
 
-  if (!ready) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-white">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <div className="text-lg text-green-600 font-bold">FE CREDIT</div>
-          <div className="text-sm text-gray-600">Đang tải ứng dụng...</div>
-        </div>
-      </div>
-    );
-  }
+// In the fallback setTimeout:
+if (!ready) {
+  console.warn('ZMP SDK timeout – continuing without it');
+  
+  // Minimal mock for zmp-ui basics (expand based on your debug errors)
+  (window as any).zmp = {
+    ready: (callback: () => void) => callback(),  // Already handled, but ensure
+    getSystemInfo: () => Promise.resolve({ platform: 'ios', appVersion: '1.0.0' }),  // For theming/status
+    setStatusBarStyle: () => {},  // No-op
+    alert: (title: string, message: string, callback?: () => void) => {
+      alert(`${title}\n${message}`);  // Fallback to browser alert
+      callback?.();
+    },
+    // Add more from errors, e.g.:
+    // navigateBack: () => window.history.back(),
+    // getAuthHeader: () => Promise.resolve({ Authorization: 'mock-token' }),
+  };
+  
+  setReady(true);
+}
 
   return <MyApp />;
 };
