@@ -25,17 +25,30 @@ jobs:
       - name: Sync iOS
         run: npx cap sync ios
 
-      - name: Build & Archive (Allow Auto-Signing)
+      - name: Build & Archive (Free Apple ID Auto-Signing)
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
         run: |
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+
+          xcodebuild -allowProvisioningUpdates \
+                     -authenticationPolicy=allowNetworkAccess \
+                     -authenticationAppleID="$APPLE_ID" \
+                     -authenticationPassword="$APPLE_ID_PASSWORD"
+
           xcodebuild -workspace ios/App/App.xcworkspace \
                       -scheme App \
                       -configuration Debug \
                       -sdk iphoneos \
                       -archivePath build/app.xcarchive \
                       archive \
-                      -allowProvisioningUpdates
+                      -allowProvisioningUpdates \
+                      -authenticationPolicy=allowNetworkAccess
 
-      - name: Export Development IPA (Free Apple ID)
+      - name: Export Development IPA
         run: |
           mkdir -p build/ipa
 
