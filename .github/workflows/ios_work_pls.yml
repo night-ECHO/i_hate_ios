@@ -1,31 +1,4 @@
-name: Build iOS
-on: [push]
-
-jobs:
-  build:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install deps
-        run: npm ci
-
-      - name: Install Capacitor
-        run: npm install @capacitor/cli @capacitor/ios
-
-      - name: Build web
-        run: npm run build
-
-      - name: Sync iOS
-        run: npx cap sync ios
-
-      - name: Build UNSIGNED App
+      - name: Build & Archive (Allow Auto-Signing)
         run: |
           xcodebuild -workspace ios/App/App.xcworkspace \
                       -scheme App \
@@ -33,15 +6,33 @@ jobs:
                       -sdk iphoneos \
                       -archivePath build/app.xcarchive \
                       archive \
-                      CODE_SIGNING_ALLOWED=NO
+                      -allowProvisioningUpdates
 
-      - name: Export .app
+      - name: Export Development IPA (Free Apple ID)
         run: |
-          mkdir -p build/app
-          cp -r build/app.xcarchive/Products/Applications/*.app build/app/
+          mkdir -p build/ipa
 
-      - name: Upload .app
+          cat > exportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>development</string>
+            <key>compileBitcode</key>
+            <false/>
+          </dict>
+          </plist>
+          EOF
+
+          xcodebuild -exportArchive \
+            -archivePath build/app.xcarchive \
+            -exportOptionsPlist exportOptions.plist \
+            -exportPath build/ipa \
+            -allowProvisioningUpdates
+
+      - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: fecredit-ios-app
-          path: build/app/*.app
+          name: fecredit-ios-ipa
+          path: build/ipa/*.ipa
