@@ -1,13 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Your App</title>
+    <meta charset="UTF-8" />
+    <!-- FIXED: Full viewport meta tag -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>FE Credit MiniApp</title>
+
+    <!-- ==== ZMP SDK (must be first) ==== -->
+    <script>
+      window.zmp = window.zmp || {};
+      (function () {
+        var s = document.createElement('script');
+        s.src = 'https://mini.zalo.me/sdk/zmp-sdk.js';
+        s.async = true;
+        document.head.appendChild(s);
+      })();
+    </script>
+
+    <!-- ==== CSS ==== -->
+    <link rel="stylesheet" href="zmp-ui/zaui.css" />
+    <link rel="stylesheet" href="tailwind.css" />
+    <link rel="stylesheet" href="app.css" />
   </head>
+
   <body>
     <div id="app"></div>
-    <!-- This is the correct entry point for .tsx projects -->
-    <script type="module" src="/src/app.tsx"></script>
+
+    <!-- ==== JS (built by Vite) ==== -->
+    <script type="module" src="app.js"></script>
   </body>
 </html>
