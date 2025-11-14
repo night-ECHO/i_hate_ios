@@ -8,6 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig({
+  base: './',
   plugins: [
     react(),
     {
@@ -48,7 +49,17 @@ export default defineConfig({
     },
   ],
   resolve: {
-    alias: { '@': path.resolve(__dirname, 'src') },
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+      'react-router-dom': path.resolve(
+        __dirname,
+        'node_modules/zmp-ui/node_modules/react-router-dom'
+      ),
+      'react-router': path.resolve(
+        __dirname,
+        'node_modules/zmp-ui/node_modules/react-router'
+      ),
+    },
   },
   build: {
     outDir: 'www',

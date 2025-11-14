@@ -1,30 +1,13 @@
-// src/main.tsx
 import React from "react";
-import { HashRouter, Routes, Route } from "react-router-dom";
-import { App, ZMPRouter } from "zmp-ui";
+import { createRoot } from "react-dom/client";
 
-import Intro from "./pages/Intro";
-import Terms from "./pages/Terms";
-import LoanInfo from "./pages/LoanInfo";
-import Confirm from "./pages/Confirm";
-import Success from "./pages/Success";
+import App from "./app";
 
-const MyApp = () => {
-  return (
-    <ZMPRouter>
-      <HashRouter>
-        <App>
-          <Routes>
-            <Route path="/" element={<Intro />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/loan" element={<LoanInfo />} />
-            <Route path="/confirm" element={<Confirm />} />
-            <Route path="/success" element={<Success />} />
-          </Routes>
-        </App>
-      </HashRouter>
-    </ZMPRouter>
-  );
-};
+const container = document.getElementById("app");
 
-export default MyApp;
+if (container) {
+  const root = createRoot(container);
+  root.render(<App />);
+} else {
+  console.error("Cannot find #app container to mount React root");
+}
