@@ -28,9 +28,6 @@ jobs:
         run: npm run build
 
       # --------------------------------------------------------------
-      # IMPORTANT: create the native iOS project if it does not exist
-      - name: Add iOS platform
-        run: npx cap add ios
 
       # --------------------------------------------------------------
       - name: Sync web assets into iOS
